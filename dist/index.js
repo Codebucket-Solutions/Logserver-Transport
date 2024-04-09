@@ -43,8 +43,13 @@ class LogserverTransport extends winston_transport_1.default {
             if (options.error) {
                 this.emit("warn", options.error.message);
             }
-            else {
-                this.emit("logged", info);
+            else if (options.response) {
+                if (options.response.data.success) {
+                    this.emit("logged", info);
+                }
+                else {
+                    this.emit("warn", options.response.data.message);
+                }
             }
         });
         if (callback) {

@@ -71,8 +71,12 @@ export class LogserverTransport extends Transport {
     this._doBatch(this._logTransform(info), (options: callbackType) => {
       if (options.error) {
         this.emit("warn", options.error.message);
-      } else {
-        this.emit("logged", info);
+      } else if (options.response) {
+        if (options.response.data.success) {
+          this.emit("logged", info);
+        } else {
+          this.emit("warn", options.response.data.message);
+        }
       }
     });
     if (callback) {
