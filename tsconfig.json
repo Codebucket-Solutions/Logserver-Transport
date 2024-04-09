@@ -7,7 +7,7 @@
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
-    "outDir": "./lib",
+    "outDir": "./dist",
     "rootDir": "./src"
   },
   "include": [
