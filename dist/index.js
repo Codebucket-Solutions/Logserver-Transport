@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const winston_transport_1 = __importDefault(require("winston-transport"));
 const triple_beam_1 = require("triple-beam");
 const axios_1 = __importDefault(require("axios"));
-module.exports = class LogstashTransport extends winston_transport_1.default {
+class LogstashTransport extends winston_transport_1.default {
     constructor(opts) {
         super(opts);
         this.application = opts.application;
@@ -86,4 +86,6 @@ module.exports = class LogstashTransport extends winston_transport_1.default {
             callback({ error });
         });
     }
-};
+}
+exports.default = LogstashTransport;
+;

@@ -22,7 +22,7 @@ type logType = {
   message?: string;
 };
 
-module.exports = class LogstashTransport extends Transport {
+export default class LogstashTransport extends Transport {
   private axiosInstance: Axios;
   private application?: string;
   private environment?: string;
