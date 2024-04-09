@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LogstashTransport = void 0;
 const winston_transport_1 = __importDefault(require("winston-transport"));
 const triple_beam_1 = require("triple-beam");
 const axios_1 = __importDefault(require("axios"));
@@ -87,5 +88,5 @@ class LogstashTransport extends winston_transport_1.default {
         });
     }
 }
-exports.default = LogstashTransport;
+exports.LogstashTransport = LogstashTransport;
 ;
