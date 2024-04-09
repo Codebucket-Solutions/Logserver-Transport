@@ -35,7 +35,7 @@ class LogserverTransport extends winston_transport_1.default {
             environment: info.environment ? info.environment : this.environment,
             logLevel: info[triple_beam_1.LEVEL],
             host: info.host ? info.host : this.host,
-            message: info[triple_beam_1.MESSAGE],
+            message: info[triple_beam_1.MESSAGE].message ? info[triple_beam_1.MESSAGE].message : info[triple_beam_1.MESSAGE],
         };
     }
     log(info, callback) {
@@ -89,4 +89,3 @@ class LogserverTransport extends winston_transport_1.default {
     }
 }
 exports.LogserverTransport = LogserverTransport;
-;

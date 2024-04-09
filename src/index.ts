@@ -63,7 +63,7 @@ export class LogserverTransport extends Transport {
       environment: info.environment ? info.environment : this.environment,
       logLevel: info[LEVEL],
       host: info.host ? info.host : this.host,
-      message: info[MESSAGE],
+      message: info[MESSAGE].message ? info[MESSAGE].message : info[MESSAGE],
     };
   }
 
@@ -118,4 +118,4 @@ export class LogserverTransport extends Transport {
         callback({ error });
       });
   }
-};
+}
