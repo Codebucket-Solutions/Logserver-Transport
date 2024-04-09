@@ -4,6 +4,7 @@
     "module": "commonjs",
     "strict": true,
     "useUnknownInCatchVariables": false,
+    "declaration": true,
     "esModuleInterop": true,
     "outDir": "./lib",
     "rootDir": "./src"
