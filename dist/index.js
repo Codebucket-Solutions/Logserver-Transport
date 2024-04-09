@@ -59,7 +59,7 @@ class LogserverTransport extends winston_transport_1.default {
             this.batchCallback = callback;
             this.batchTimeoutID = setTimeout(function () {
                 // timeout is reached, send all messages to endpoint
-                me.batchTimeoutID = -1;
+                me.batchTimeoutID = 0;
                 me._doBatchRequest(me.batchCallback);
             }, this.batchInterval);
         }
@@ -71,7 +71,7 @@ class LogserverTransport extends winston_transport_1.default {
     _doBatchRequest(callback) {
         if (this.batchTimeoutID) {
             clearTimeout(this.batchTimeoutID);
-            this.batchTimeoutID = -1;
+            this.batchTimeoutID = 0;
         }
         const batchOptionsCopy = this.batchOptions.slice();
         this.batchOptions = [];

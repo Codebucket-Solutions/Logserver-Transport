@@ -88,7 +88,7 @@ export class LogserverTransport extends Transport {
       this.batchCallback = callback;
       this.batchTimeoutID = setTimeout(function () {
         // timeout is reached, send all messages to endpoint
-        me.batchTimeoutID = -1;
+        me.batchTimeoutID = 0;
         me._doBatchRequest(me.batchCallback);
       }, this.batchInterval);
     }
@@ -101,7 +101,7 @@ export class LogserverTransport extends Transport {
   _doBatchRequest(callback: (options: callbackType) => void) {
     if (this.batchTimeoutID) {
       clearTimeout(this.batchTimeoutID);
-      this.batchTimeoutID = -1;
+      this.batchTimeoutID = 0;
     }
     const batchOptionsCopy = this.batchOptions.slice();
     this.batchOptions = [];
