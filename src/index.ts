@@ -42,7 +42,7 @@ export class LogserverTransport extends Transport {
     this.service = opts.service;
     this.host = opts.host;
     this.version = opts.version;
-    this.logEndpoint = opts.apiLogEndpoint ? opts.apiLogEndpoint : "logs";
+    this.logEndpoint = opts.apiLogEndpoint ? opts.apiLogEndpoint : "log";
     this.batchCount = opts.batchCount ? opts.batchCount : 20;
     this.batchInterval = opts.batchInterval ? opts.batchInterval : 5000;
     this.axiosInstance = axios.create({
