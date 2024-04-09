@@ -1,4 +1,5 @@
 {
+    "name": "winston-logstash-batch-server-transport",
     "main": "/dist/index.js",
     "files": [
       "dist/"
