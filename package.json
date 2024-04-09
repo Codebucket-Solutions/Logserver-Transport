@@ -1,5 +1,5 @@
 {
-    "name": "winston-logstash-batch-server-transport",
+    "name": "winston-logserver-transport",
     "main": "dist/index",
     "types": "dist/index",
     "scripts": {

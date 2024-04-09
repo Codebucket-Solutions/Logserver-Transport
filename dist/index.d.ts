@@ -15,7 +15,7 @@ type logType = {
     host?: string;
     message?: string;
 };
-export declare class LogstashTransport extends Transport {
+export declare class LogserverTransport extends Transport {
     private axiosInstance;
     private application?;
     private environment?;
