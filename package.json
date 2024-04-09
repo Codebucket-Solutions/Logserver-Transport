@@ -1,0 +1,19 @@
+{
+    "main": "/dist/index.js",
+    "files": [
+      "dist/"
+    ],
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "tsc"
+    },
+    "devDependencies": {
+      "ts-node": "^10.9.2",
+      "typescript": "^5.4.4"
+    },
+    "dependencies": {
+      "axios": "^1.6.8",
+      "winston": "^3.13.0",
+      "winston-transport": "^4.7.0"
+    }
+  }
