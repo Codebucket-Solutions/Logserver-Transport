@@ -3,7 +3,7 @@
     "main": "dist/index",
     "types": "dist/index",
     "files": [
-        "build",
+        "dist",
         "src/**/*.d.ts"
       ],
     "scripts": {
