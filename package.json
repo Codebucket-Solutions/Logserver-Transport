@@ -2,10 +2,6 @@
     "name": "winston-logstash-batch-server-transport",
     "main": "dist/index",
     "types": "dist/index",
-    "files": [
-        "dist",
-        "src/**/*.d.ts"
-      ],
     "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
       "start": "tsc"
