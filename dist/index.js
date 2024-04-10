@@ -7,14 +7,9 @@ exports.LogserverTransport = void 0;
 const winston_transport_1 = __importDefault(require("winston-transport"));
 const triple_beam_1 = require("triple-beam");
 const axios_1 = __importDefault(require("axios"));
-class LogserverTransport extends winston_transport_1.default {
+const pino_abstract_transport_1 = __importDefault(require("pino-abstract-transport"));
+class GeneralLogger {
     constructor(opts) {
-        super(opts);
-        this.application = opts.application;
-        this.environment = opts.environment;
-        this.service = opts.service;
-        this.host = opts.host;
-        this.version = opts.version;
         this.logEndpoint = opts.apiLogEndpoint ? opts.apiLogEndpoint : "log";
         this.batchCount = opts.batchCount ? opts.batchCount : 20;
         this.batchInterval = opts.batchInterval ? opts.batchInterval : 5000;
@@ -25,36 +20,6 @@ class LogserverTransport extends winston_transport_1.default {
         this.batchOptions = [];
         this.batchTimeoutID = 0;
         this.batchCallback = () => { };
-    }
-    _logTransform(info) {
-        return {
-            timestamp: info.timestamp ? info.timestamp : new Date().toISOString(),
-            version: info.version ? info.version : this.version,
-            service: info.service ? info.service : this.service,
-            application: info.application ? info.application : this.application,
-            environment: info.environment ? info.environment : this.environment,
-            logLevel: info[triple_beam_1.LEVEL],
-            host: info.host ? info.host : this.host,
-            message: info.message ? info.message : info[triple_beam_1.MESSAGE],
-        };
-    }
-    log(info, callback) {
-        this._doBatch(this._logTransform(info), (options) => {
-            if (options.error) {
-                this.emit("warn", options.error.message);
-            }
-            else if (options.response) {
-                if (options.response.data.success) {
-                    this.emit("logged", info);
-                }
-                else {
-                    this.emit("warn", options.response.data.message);
-                }
-            }
-        });
-        if (callback) {
-            setImmediate(callback);
-        }
     }
     _doBatch(options, callback) {
         this.batchOptions.push(options);
@@ -93,4 +58,88 @@ class LogserverTransport extends winston_transport_1.default {
         });
     }
 }
+class LogserverTransport extends winston_transport_1.default {
+    constructor(opts) {
+        super(opts);
+        this.application = opts.application;
+        this.environment = opts.environment;
+        this.service = opts.service;
+        this.host = opts.host;
+        this.version = opts.version;
+        this.generalLogger = new GeneralLogger(opts);
+    }
+    _logTransform(info) {
+        return {
+            ...info,
+            timestamp: info.timestamp ? info.timestamp : new Date().toISOString(),
+            version: info.version ? info.version : this.version,
+            service: info.service ? info.service : this.service,
+            application: info.application ? info.application : this.application,
+            environment: info.environment ? info.environment : this.environment,
+            logLevel: info[triple_beam_1.LEVEL],
+            host: info.host ? info.host : this.host,
+            message: info.message ? info.message : info[triple_beam_1.MESSAGE],
+        };
+    }
+    log(info, callback) {
+        this.generalLogger._doBatch(this._logTransform(info), (options) => {
+            if (options.error) {
+                this.emit("warn", options.error.message);
+            }
+            else if (options.response) {
+                if (options.response.data.success) {
+                    this.emit("logged", info);
+                }
+                else {
+                    this.emit("warn", options.response.data.message);
+                }
+            }
+        });
+        if (callback) {
+            setImmediate(callback);
+        }
+    }
+}
 exports.LogserverTransport = LogserverTransport;
+const levels = {
+    10: "trace",
+    20: "debug",
+    30: "info",
+    40: "warn",
+    50: "error",
+    60: "fatal",
+};
+let _logTransform = (info, opts) => {
+    return {
+        ...info,
+        timestamp: info.timestamp ? info.timestamp : new Date().toISOString(),
+        version: info.version ? info.version : opts.version,
+        service: info.service ? info.service : opts.service,
+        application: info.application ? info.application : opts.application,
+        environment: info.environment ? info.environment : opts.environment,
+        logLevel: levels[info.level],
+        host: info.host ? info.host : opts.host,
+        message: info.msg,
+    };
+};
+async function default_1(opts) {
+    const generalLogger = new GeneralLogger(opts);
+    return (0, pino_abstract_transport_1.default)(async function (source) {
+        for await (const obj of source) {
+            if (!obj) {
+                return;
+            }
+            generalLogger._doBatch(_logTransform(obj, opts), (options) => {
+                if (options.error) {
+                    console.warn("PINO LOGGER ERROR: " + options.error.message);
+                }
+                else if (options.response) {
+                    if (!options.response.data.success) {
+                        console.warn("PINO LOGGER ERROR: " + options.response.data.message);
+                    }
+                }
+            });
+        }
+    });
+}
+exports.default = default_1;

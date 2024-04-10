@@ -5,6 +5,7 @@ import {
 } from "triple-beam";
 import { CustomOptions } from "./types";
 import axios, { Axios, AxiosError, AxiosResponse } from "axios";
+import build from "pino-abstract-transport";
 
 type callbackType = {
   response?: AxiosResponse;
@@ -22,13 +23,8 @@ type logType = {
   message?: string;
 };
 
-export class LogserverTransport extends Transport {
+class GeneralLogger {
   private axiosInstance: Axios;
-  private application?: string;
-  private environment?: string;
-  private service?: string;
-  private host?: string;
-  private version?: string | number;
   private logEndpoint: string;
   private batchInterval: number;
   private batchCount: number;
@@ -36,12 +32,6 @@ export class LogserverTransport extends Transport {
   private batchTimeoutID: ReturnType<typeof setTimeout> | number;
   private batchCallback: (options: callbackType) => void;
   constructor(opts: CustomOptions) {
-    super(opts);
-    this.application = opts.application;
-    this.environment = opts.environment;
-    this.service = opts.service;
-    this.host = opts.host;
-    this.version = opts.version;
     this.logEndpoint = opts.apiLogEndpoint ? opts.apiLogEndpoint : "log";
     this.batchCount = opts.batchCount ? opts.batchCount : 20;
     this.batchInterval = opts.batchInterval ? opts.batchInterval : 5000;
@@ -52,36 +42,6 @@ export class LogserverTransport extends Transport {
     this.batchOptions = [];
     this.batchTimeoutID = 0;
     this.batchCallback = () => {};
-  }
-
-  _logTransform(info: any): logType {
-    return {
-      timestamp: info.timestamp ? info.timestamp : new Date().toISOString(),
-      version: info.version ? info.version : this.version,
-      service: info.service ? info.service : this.service,
-      application: info.application ? info.application : this.application,
-      environment: info.environment ? info.environment : this.environment,
-      logLevel: info[LEVEL],
-      host: info.host ? info.host : this.host,
-      message: info.message ? info.message : info[MESSAGE],
-    };
-  }
-
-  log(info: any, callback?: () => void) {
-    this._doBatch(this._logTransform(info), (options: callbackType) => {
-      if (options.error) {
-        this.emit("warn", options.error.message);
-      } else if (options.response) {
-        if (options.response.data.success) {
-          this.emit("logged", info);
-        } else {
-          this.emit("warn", options.response.data.message);
-        }
-      }
-    });
-    if (callback) {
-      setImmediate(callback);
-    }
   }
 
   _doBatch(options: logType, callback: (options: callbackType) => void) {
@@ -122,4 +82,104 @@ export class LogserverTransport extends Transport {
         callback({ error });
       });
   }
+}
+
+export class LogserverTransport extends Transport {
+  private generalLogger: GeneralLogger;
+  private application?: string;
+  private environment?: string;
+  private service?: string;
+  private host?: string;
+  private version?: string | number;
+  constructor(opts: CustomOptions) {
+    super(opts);
+    this.application = opts.application;
+    this.environment = opts.environment;
+    this.service = opts.service;
+    this.host = opts.host;
+    this.version = opts.version;
+    this.generalLogger = new GeneralLogger(opts);
+  }
+
+  _logTransform(info: any): logType {
+    return {
+      ...info,
+      timestamp: info.timestamp ? info.timestamp : new Date().toISOString(),
+      version: info.version ? info.version : this.version,
+      service: info.service ? info.service : this.service,
+      application: info.application ? info.application : this.application,
+      environment: info.environment ? info.environment : this.environment,
+      logLevel: info[LEVEL],
+      host: info.host ? info.host : this.host,
+      message: info.message ? info.message : info[MESSAGE],
+    };
+  }
+
+  log(info: any, callback?: () => void) {
+    this.generalLogger._doBatch(
+      this._logTransform(info),
+      (options: callbackType) => {
+        if (options.error) {
+          this.emit("warn", options.error.message);
+        } else if (options.response) {
+          if (options.response.data.success) {
+            this.emit("logged", info);
+          } else {
+            this.emit("warn", options.response.data.message);
+          }
+        }
+      }
+    );
+    if (callback) {
+      setImmediate(callback);
+    }
+  }
+}
+
+const levels: Record<number, string> = {
+  10: "trace",
+  20: "debug",
+  30: "info",
+  40: "warn",
+  50: "error",
+  60: "fatal",
+};
+
+let _logTransform = (info: any, opts: CustomOptions) => {
+  return {
+    ...info,
+    timestamp: info.timestamp ? info.timestamp : new Date().toISOString(),
+    version: info.version ? info.version : opts.version,
+    service: info.service ? info.service : opts.service,
+    application: info.application ? info.application : opts.application,
+    environment: info.environment ? info.environment : opts.environment,
+    logLevel: levels[info.level],
+    host: info.host ? info.host : opts.host,
+    message: info.msg,
+  };
+};
+
+export default async function (opts: CustomOptions) {
+  const generalLogger = new GeneralLogger(opts);
+  return build(async function (source) {
+    for await (const obj of source) {
+      if (!obj) {
+        return;
+      }
+      generalLogger._doBatch(
+        _logTransform(obj, opts),
+        (options: callbackType) => {
+          if (options.error) {
+            console.warn("PINO LOGGER ERROR: " + options.error.message);
+          } else if (options.response) {
+            if (!options.response.data.success) {
+              console.warn(
+                "PINO LOGGER ERROR: " + options.response.data.message
+              );
+            }
+          }
+        }
+      );
+    }
+  });
 }
