@@ -175,11 +175,13 @@ export default async function (opts: CustomOptions) {
         _logTransform(obj, opts),
         (options: callbackType) => {
           if (options.error) {
-            console.warn("PINO LOGGER ERROR: " + options.error.message);
+            console.warn(
+              "PINO LOGSERVER LOGGER ERROR: " + options.error.message
+            );
           } else if (options.response) {
             if (!options.response.data.success) {
               console.warn(
-                "PINO LOGGER ERROR: " + options.response.data.message
+                "PINO LOGSERVER LOGGER ERROR: " + options.response.data.message
               );
             }
           }

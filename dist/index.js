@@ -110,6 +110,8 @@ const levels = {
     60: "fatal",
 };
 let _logTransform = (info, opts) => {
+    if (info.time)
+        info.timestamp = new Date(info.time).toISOString();
     return {
         ...info,
         timestamp: info.timestamp ? info.timestamp : new Date().toISOString(),
@@ -117,7 +119,11 @@ let _logTransform = (info, opts) => {
         service: info.service ? info.service : opts.service,
         application: info.application ? info.application : opts.application,
         environment: info.environment ? info.environment : opts.environment,
-        logLevel: levels[info.level],
+        logLevel: info.level
+            ? typeof info.level == "string"
+                ? info.level
+                : levels[info.level]
+            : "",
         host: info.host ? info.host : opts.host,
         message: info.msg,
     };
@@ -131,11 +137,11 @@ async function default_1(opts) {
             }
             generalLogger._doBatch(_logTransform(obj, opts), (options) => {
                 if (options.error) {
-                    console.warn("PINO LOGGER ERROR: " + options.error.message);
+                    console.warn("PINO LOGSERVER LOGGER ERROR: " + options.error.message);
                 }
                 else if (options.response) {
                     if (!options.response.data.success) {
-                        console.warn("PINO LOGGER ERROR: " + options.response.data.message);
+                        console.warn("PINO LOGSERVER LOGGER ERROR: " + options.response.data.message);
                     }
                 }
             });
