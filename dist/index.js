@@ -69,6 +69,13 @@ class LogserverTransport extends winston_transport_1.default {
         this.generalLogger = new GeneralLogger(opts);
     }
     _logTransform(info) {
+        for (let key of Object.keys(info)) {
+            if (!info[key])
+                delete info[key];
+            if (typeof info[key] === "object") {
+                info[key] = JSON.stringify(info[key]);
+            }
+        }
         return {
             ...info,
             timestamp: info.timestamp ? info.timestamp : new Date().toISOString(),
@@ -110,6 +117,13 @@ const levels = {
     60: "fatal",
 };
 let _logTransform = (info, opts) => {
+    for (let key of Object.keys(info)) {
+        if (!info[key])
+            delete info[key];
+        if (typeof info[key] === "object") {
+            info[key] = JSON.stringify(info[key]);
+        }
+    }
     if (info.time)
         info.timestamp = new Date(info.time).toISOString();
     return {
