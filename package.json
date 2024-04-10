@@ -1,5 +1,6 @@
 {
-    "name": "logserver-transport",
+    "name": "@codebucket/logserver-transport",
+    "version":"1.0.0",
     "main": "dist/index",
     "types": "dist/index",
     "scripts": {
@@ -15,5 +16,9 @@
         "pino-abstract-transport": "^1.1.0",
         "winston": "^3.13.0",
         "winston-transport": "^4.7.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Codebucket-Solutions/Logserver-Transport.git"
     }
 }
